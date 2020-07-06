@@ -1,0 +1,4 @@
+node_modules/
+.next/
+p_db01
+yarn.lock
