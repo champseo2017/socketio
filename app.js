@@ -7,18 +7,20 @@ server.get("/", (req, res) => {
   res.sendfile("index.html");
 });
 
-let clients = 0; // คอยนับจำนวนเครื่องที่เชื่อมต่อ
+const users = [];
 io.on("connection", (socket) => {
-  clients++;
-  io.sockets.emit("broadcast", {
-    message: clients + " clients connected!",
+  console.log("Connected");
+  socket.on("setUsername", (data) => {
+    if (users.indexOf(data) > -1) {
+      socket.emit("userExists", data + " มีผู้ใช้ชื่อนี้แล้ว กรุณาใช้ชื่อใหม่");
+    } else {
+      users.push(data);
+      socket.emit("userSet", { username: data });
+    }
   });
-  socket.on("disconnect", () => {
-    clients--;
-    io.sockets.emit("broadcast", {
-      message: clients + " clients connected!",
-    });
-  });
+  socket.on('msg', (data) => {
+    io.sockets.emit('newmsg', data);
+  })
 });
 
 http.listen(8080, () => {

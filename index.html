@@ -11,13 +11,50 @@
       crossorigin="anonymous"
     ></script>
   </head>
+
   <body>
+    <div id="error-container"></div>
+    <input
+      id="name"
+      type="text"
+      name="name"
+      value=""
+      placeholder="กรุณาตั้งชื่อของคุณ"
+    />
+    <button type="button" name="button" onclick="setUsername()">
+      เชื่อมต่อ
+    </button>
+
     <script type="text/javascript">
       const socket = io();
-      socket.on("broadcast", ({message}) => {
-        document.body.innerHTML = "";
-        document.write(message);
+      const setUsername = () => {
+        socket.emit("setUsername", document.getElementById("name").value);
+      };
+      let user;
+      socket.on("userExists", (data) => {
+        document.getElementById("error-container").innerHTML = data;
       });
+
+      socket.on("userSet", ({ username }) => {
+        user = username;
+        document.body.innerHTML = `<input type="text" id="message">
+            <button type="button" name="button" onClick="sendMessage()">ส่ง</button>
+            <div id="message-container"></div>`;
+      });
+
+      const sendMessage = () => {
+        const msg = document.getElementById("message").value;
+        if (msg) {
+          socket.emit("msg", { message: msg, user: user });
+        }
+       
+      };
+
+      socket.on('newmsg', (data) => {
+            if(user){
+                document.getElementById('message-container').innerHTML += `<div><b>${data.user}</b>: ${data.message}</div>`;
+            }
+        })
     </script>
   </body>
 </html>
